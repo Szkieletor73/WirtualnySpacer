@@ -51,7 +51,7 @@ function init() {
 }
 
 function render() {
-    requestAnimationFrame(render);
-    controls.update(1);
-    renderer.render(scene, camera);
+  requestAnimationFrame(render);
+  controls.update(1);
+  renderer.render(scene, camera);
 }

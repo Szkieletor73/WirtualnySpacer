@@ -13,6 +13,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.lookVertical = true;
 	this.autoForward = false;
 
+	this.headHeight = 50;
+
 	this.activeLook = true;
 
 	this.heightSpeed = false;
@@ -20,7 +22,7 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.heightMin = 0.0;
 	this.heightMax = 1.0;
 
-	this.constrainVertical = false;
+	this.constrainVertical = true;
 	this.verticalMin = 0;
 	this.verticalMax = Math.PI;
 
@@ -199,10 +201,13 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		var actualMoveSpeed = delta * this.movementSpeed;
 		console.log("actualMoveSpeed = " + actualMoveSpeed + ", this.autoSpeedFactor = " + this.autoSpeedFactor + ", this.movementSpeed = " + this.movementSpeed + ", delta = " + delta);
-
 		//new "slide" code for camera movement
-		if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.position = THREE.Vector3( - ( actualMoveSpeed + this.autoSpeedFactor ) );
+		//if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.position = THREE.Vector3( - ( actualMoveSpeed + this.autoSpeedFactor ) );
+		if ( this.moveForward ) this.object.translateZ( -1 * actualMoveSpeed );
 		if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
+
+		//reset height to default so no vertical movement occurs
+		this.object.position.y = this.headHeight;
 
 		if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
 		if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
