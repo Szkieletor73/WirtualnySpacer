@@ -15,6 +15,16 @@
   </head>
 
   <body>
-
+    <div class="button-container">
+      <div class="button-container-inner">
+      <!-- <button id="button-forward" class="button-square" onmousedown="controls.move(1)" onmouseup="controls.move(-1)">Up</div> -->
+        <button class="button-square" onpointerdown="controls.move(1)" onpointerup="controls.move(-1)">Forward</button>
+        <button class="button-square" onpointerdown="controls.move(3)" onpointerup="controls.move(-3)">Backward</button>
+        <button class="button-square" onpointerdown="controls.move(2)" onpointerup="controls.move(-2)">Left</button>
+        <button class="button-square" onpointerdown="controls.move(4)" onpointerup="controls.move(-4)">Right</button>
+        <button class="button-square" onpointerdown="controls.rotate(1)" onpointerup="controls.rotate(-1)">Rot Left</button>
+        <button class="button-square" onpointerdown="controls.rotate(2)" onpointerup="controls.rotate(-2)">Rot Right</button>
+      </div>
+    </div>
   </body>
 </html>

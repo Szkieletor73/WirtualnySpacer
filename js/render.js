@@ -1,5 +1,5 @@
 var container;
-var camera, controls, scene, renderer;
+var camera, controls, scene, renderer, model;
 var lighting, ambient, keyLight, fillLight, backLight;
 var windowHalfX = window.innerWidth / 2;
 var windowHalfY = window.innerHeight / 2;
@@ -32,7 +32,8 @@ function init() {
     objLoader.setMaterials(materials);
     objLoader.setPath('assets/');
     objLoader.load('../model/wydzial.obj', function (object) {
-      scene.add(object);
+      model = object;
+      scene.add(model);
     });
   });
   renderer = new THREE.WebGLRenderer();
@@ -52,6 +53,6 @@ function init() {
 
 function render() {
   requestAnimationFrame(render);
-  controls.update(1);
+  controls.update(1, model);
   renderer.render(scene, camera);
 }

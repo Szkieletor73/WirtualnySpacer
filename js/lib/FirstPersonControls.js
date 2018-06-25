@@ -41,6 +41,9 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 	this.moveLeft = false;
 	this.moveRight = false;
 
+	this.rotateLeft = false;
+	this.rotateRight = false;
+
 	this.mouseDragOn = false;
 
 	this.viewHalfX = 0;
@@ -72,14 +75,14 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.onMouseDown = function ( event ) {
 
-		if ( this.domElement !== document ) {
+		// if ( this.domElement !== document ) {
 
-			this.domElement.focus();
+		// 	this.domElement.focus();
 
-		}
+		// }
 
-		event.preventDefault();
-		event.stopPropagation();
+		//event.preventDefault();
+		//event.stopPropagation();
 
 		// if ( this.activeLook ) {
 
@@ -98,8 +101,8 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 	this.onMouseUp = function ( event ) {
 
-		event.preventDefault();
-		event.stopPropagation();
+		//event.preventDefault();
+		//event.stopPropagation();
 
 		// if ( this.activeLook ) {
 
@@ -151,9 +154,6 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			case 39: /*right*/
 			case 68: /*D*/ this.moveRight = true; break;
 
-			case 82: /*R*/ this.moveUp = true; break;
-			case 70: /*F*/ this.moveDown = true; break;
-
 		}
 
 	};
@@ -174,15 +174,43 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 			case 39: /*right*/
 			case 68: /*D*/ this.moveRight = false; break;
 
-			case 82: /*R*/ this.moveUp = false; break;
-			case 70: /*F*/ this.moveDown = false; break;
-
 		}
 
 	};
 
-	this.update = function( delta ) {
-		console.log("x " + this.object.position.x + ", y " + this.object.position.y + ", z " + this.object.position.z);
+	this.move = function (direction) {
+		console.log("Movement changed " + direction);
+		switch(direction) {
+			case 1: this.moveForward = true; break; //Forward
+			case -1: this.moveForward = false; break; //Stop forward
+
+			case 2: this.moveLeft = true; break;
+			case -2: this.moveLeft = false; break;
+
+			case 3: this.moveBackward = true; break;
+			case -3: this.moveBackward = false; break;
+
+			case 4: this.moveRight = true; break;
+			case -4: this.moveRight = false; break;
+		}
+	}
+
+	this.rotate = function (direction) {
+		switch(direction) {
+			case 1: this.rotateLeft = true; break;
+			case -1: this.rotateLeft = false; break;
+			case 2: this.rotateRight = true; break;
+			case -2: this.rotateRight = false; break;
+		}
+	}
+
+	//Event listeners for button movement GUI
+	// document.getElementById("button-forward").addEventListener("mousedown", this.move(1));
+	// document.getElementById("button-forward").addEventListener("mouseup", this.move(-1));
+	// document.getElementById("button-forward").addEventListener("click", alert("btn"));
+
+	this.update = function( delta, model ) {
+		//console.log("x " + this.object.position.x + ", y " + this.object.position.y + ", z " + this.object.position.z);
 
 		if ( this.enabled === false ) return;
 
@@ -199,8 +227,17 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 
 		}
 
+		//collision raycast
+		// var collisionDistance = 1;
+		// var cameraForwardDirection = new THREE.Vector3(0, 0, -1).applyMatrix4(this.object.matrixWorld);
+		// var ray = new THREE.Raycaster(this.object.position, cameraForwardDirection, this.object.position, collisionDistance);
+		// var intersects = ray.intersectObject(model, true);
+		// if (intersects.length > 0) {
+		// 	console.log("COLLISION")
+		// }
+
 		var actualMoveSpeed = delta * this.movementSpeed;
-		console.log("actualMoveSpeed = " + actualMoveSpeed + ", this.autoSpeedFactor = " + this.autoSpeedFactor + ", this.movementSpeed = " + this.movementSpeed + ", delta = " + delta);
+		//console.log("actualMoveSpeed = " + actualMoveSpeed + ", this.autoSpeedFactor = " + this.autoSpeedFactor + ", this.movementSpeed = " + this.movementSpeed + ", delta = " + delta);
 		//new "slide" code for camera movement
 		//if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.position = THREE.Vector3( - ( actualMoveSpeed + this.autoSpeedFactor ) );
 		if ( this.moveForward ) this.object.translateZ( -1 * actualMoveSpeed );
@@ -223,6 +260,16 @@ THREE.FirstPersonControls = function ( object, domElement ) {
 		// if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
 		// if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
 
+		//button rotation
+		if(this.rotateLeft){
+			this.object.rotation.y += 3 * Math.PI / 180;
+		}
+
+		if (this.rotateRight) {
+			this.object.rotation.y -= 3 * Math.PI / 180;
+		}
+
+		//mouse drag rotation
 		if(this.mouseDragOn == true){
 			var actualLookSpeed = delta * this.lookSpeed;
 
