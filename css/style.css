@@ -1,4 +1,7 @@
-body {margin:0;}
+body {
+  user-select: none;
+  margin:0;
+}
 
 .button-container {
   position: absolute;
