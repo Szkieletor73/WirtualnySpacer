@@ -1,360 +1,322 @@
-THREE.FirstPersonControls = function ( object, domElement ) {
+/**
+ * @author mrdoob / http://mrdoob.com/
+ */
 
-	this.object = object;
-	this.target = new THREE.Vector3( 0, 0, 0 );
+THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, worldObjects) {
 
-	this.domElement = ( domElement !== undefined ) ? domElement : document;
+	var scope = this;
 
-	this.enabled = true;
+	scope.worldObjects = worldObjects;
 
-	this.movementSpeed = 2.0;
-	this.lookSpeed = 0.005;
+	camera.rotation.set(0, 0, 0);
 
-	this.lookVertical = true;
-	this.autoForward = false;
+	var pitchObject = new THREE.Object3D();
+	pitchObject.add(camera);
 
-	this.headHeight = 50;
+	var yawObject = new THREE.Object3D();
+	yawObject.position.y = playerHeight;
+	yawObject.add(pitchObject);
 
-	this.activeLook = true;
+	var PI_2 = Math.PI / 2;
 
-	this.heightSpeed = false;
-	this.heightCoef = 1.0;
-	this.heightMin = 0.0;
-	this.heightMax = 1.0;
+	var onMouseMove = function (event) {
 
-	this.constrainVertical = true;
-	this.verticalMin = 0;
-	this.verticalMax = Math.PI;
+		if (scope.enabled === false) return;
 
-	this.autoSpeedFactor = 0.0;
+		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-	this.mouseX = 0;
-	this.mouseY = 0;
+		yawObject.rotation.y -= movementX * 0.002;
+		pitchObject.rotation.x -= movementY * 0.002;
 
-	this.lat = 0;
-	this.lon = 0;
-	this.phi = 0;
-	this.theta = 0;
-
-	this.moveForward = false;
-	this.moveBackward = false;
-	this.moveLeft = false;
-	this.moveRight = false;
-
-	this.rotateLeft = false;
-	this.rotateRight = false;
-
-	this.mouseDragOn = false;
-
-	this.viewHalfX = 0;
-	this.viewHalfY = 0;
-
-	if ( this.domElement !== document ) {
-
-		this.domElement.setAttribute( 'tabindex', - 1 );
-
-	}
-
-	//
-
-	this.handleResize = function () {
-
-		if ( this.domElement === document ) {
-
-			this.viewHalfX = window.innerWidth / 2;
-			this.viewHalfY = window.innerHeight / 2;
-
-		} else {
-
-			this.viewHalfX = this.domElement.offsetWidth / 2;
-			this.viewHalfY = this.domElement.offsetHeight / 2;
-
-		}
+		pitchObject.rotation.x = Math.max(- PI_2, Math.min(PI_2, pitchObject.rotation.x));
 
 	};
 
-	this.onMouseDown = function ( event ) {
+	scope.dispose = function () {
 
-		// if ( this.domElement !== document ) {
-
-		// 	this.domElement.focus();
-
-		// }
-
-		//event.preventDefault();
-		//event.stopPropagation();
-
-		// if ( this.activeLook ) {
-
-		// 	switch ( event.button ) {
-
-		// 		case 0: this.moveForward = true; break;
-		// 		case 2: this.moveBackward = true; break;
-
-		// 	}
-
-		// }
-
-		this.mouseDragOn = true;
+		document.removeEventListener('mousemove', onMouseMove, false);
 
 	};
 
-	this.onMouseUp = function ( event ) {
+	document.addEventListener('mousemove', onMouseMove, false);
 
-		//event.preventDefault();
-		//event.stopPropagation();
+	scope.enabled = false;
 
-		// if ( this.activeLook ) {
+	scope.getPlayer = function () {
 
-		// 	switch ( event.button ) {
-
-		// 		case 0: this.moveForward = false; break;
-		// 		case 2: this.moveBackward = false; break;
-
-		// 	}
-
-		// }
-
-		this.mouseDragOn = false;
+		return yawObject;
 
 	};
 
-	this.onMouseMove = function ( event ) {
+	scope.getDirection = function () {
 
-		if ( this.domElement === document ) {
+		// assumes the camera itself is not rotated
 
-			this.mouseX = event.pageX - this.viewHalfX;
-			this.mouseY = event.pageY - this.viewHalfY;
+		var direction = new THREE.Vector3(0, 0, - 1);
+		var rotation = new THREE.Euler(0, 0, 0, "YXZ");
 
-		} else {
+		return function (v) {
 
-			this.mouseX = event.pageX - this.domElement.offsetLeft - this.viewHalfX;
-			this.mouseY = event.pageY - this.domElement.offsetTop - this.viewHalfY;
+			rotation.set(pitchObject.rotation.x, yawObject.rotation.y, 0);
 
-		}
+			v.copy(direction).applyEuler(rotation);
 
-	};
-
-	this.onKeyDown = function ( event ) {
-
-		//event.preventDefault();
-		console.log("Key pressed:" + event.keyCode);
-
-		switch ( event.keyCode ) {
-
-			case 38: /*up*/
-			case 87: /*W*/ this.moveForward = true; break;
-
-			case 37: /*left*/
-			case 65: /*A*/ this.moveLeft = true; break;
-
-			case 40: /*down*/
-			case 83: /*S*/ this.moveBackward = true; break;
-
-			case 39: /*right*/
-			case 68: /*D*/ this.moveRight = true; break;
-
-		}
-
-	};
-
-	this.onKeyUp = function ( event ) {
-
-		switch ( event.keyCode ) {
-
-			case 38: /*up*/
-			case 87: /*W*/ this.moveForward = false; break;
-
-			case 37: /*left*/
-			case 65: /*A*/ this.moveLeft = false; break;
-
-			case 40: /*down*/
-			case 83: /*S*/ this.moveBackward = false; break;
-
-			case 39: /*right*/
-			case 68: /*D*/ this.moveRight = false; break;
-
-		}
-
-	};
-
-	this.move = function (direction) {
-		console.log("Movement changed " + direction);
-		switch(direction) {
-			case 1: this.moveForward = true; break; //Forward
-			case -1: this.moveForward = false; break; //Stop forward
-
-			case 2: this.moveLeft = true; break;
-			case -2: this.moveLeft = false; break;
-
-			case 3: this.moveBackward = true; break;
-			case -3: this.moveBackward = false; break;
-
-			case 4: this.moveRight = true; break;
-			case -4: this.moveRight = false; break;
-		}
-	}
-
-	this.rotate = function (direction) {
-		switch(direction) {
-			case 1: this.rotateLeft = true; break;
-			case -1: this.rotateLeft = false; break;
-			case 2: this.rotateRight = true; break;
-			case -2: this.rotateRight = false; break;
-		}
-	}
-
-	//Event listeners for button movement GUI
-	// document.getElementById("button-forward").addEventListener("mousedown", this.move(1));
-	// document.getElementById("button-forward").addEventListener("mouseup", this.move(-1));
-	// document.getElementById("button-forward").addEventListener("click", alert("btn"));
-
-	this.update = function( delta, model ) {
-		//console.log("x " + this.object.position.x + ", y " + this.object.position.y + ", z " + this.object.position.z);
-
-		if ( this.enabled === false ) return;
-
-		if ( this.heightSpeed ) {
-
-			var y = THREE.Math.clamp( this.object.position.y, this.heightMin, this.heightMax );
-			var heightDelta = y - this.heightMin;
-
-			this.autoSpeedFactor = delta * ( heightDelta * this.heightCoef );
-
-		} else {
-
-			this.autoSpeedFactor = 0.0;
-
-		}
-
-		//collision raycast
-		// var collisionDistance = 1;
-		// var cameraForwardDirection = new THREE.Vector3(0, 0, -1).applyMatrix4(this.object.matrixWorld);
-		// var ray = new THREE.Raycaster(this.object.position, cameraForwardDirection, this.object.position, collisionDistance);
-		// var intersects = ray.intersectObject(model, true);
-		// if (intersects.length > 0) {
-		// 	console.log("COLLISION")
-		// }
-
-		var actualMoveSpeed = delta * this.movementSpeed;
-		//console.log("actualMoveSpeed = " + actualMoveSpeed + ", this.autoSpeedFactor = " + this.autoSpeedFactor + ", this.movementSpeed = " + this.movementSpeed + ", delta = " + delta);
-		//new "slide" code for camera movement
-		//if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.position = THREE.Vector3( - ( actualMoveSpeed + this.autoSpeedFactor ) );
-		if ( this.moveForward ) this.object.translateZ( -1 * actualMoveSpeed );
-		if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
-
-		//reset height to default so no vertical movement occurs
-		this.object.position.y = this.headHeight;
-
-		if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
-		if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
-
-		//old "fly" code for camera movement
-		// if ( this.moveForward || ( this.autoForward && ! this.moveBackward ) ) this.object.translateZ( - ( actualMoveSpeed + this.autoSpeedFactor ) );
-		// if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
-    //
-		// if ( this.moveLeft ) this.object.translateX( - actualMoveSpeed );
-		// if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
-
-		//move on Y plane, disabled because it's not required.
-		// if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
-		// if ( this.moveDown ) this.object.translateY( - actualMoveSpeed );
-
-		//button rotation
-		if(this.rotateLeft){
-			this.object.rotation.y += 3 * Math.PI / 180;
-		}
-
-		if (this.rotateRight) {
-			this.object.rotation.y -= 3 * Math.PI / 180;
-		}
-
-		//mouse drag rotation
-		if(this.mouseDragOn == true){
-			var actualLookSpeed = delta * this.lookSpeed;
-
-			if (!this.activeLook) {
-
-				actualLookSpeed = 0;
-
-			}
-
-			var verticalLookRatio = 1;
-
-			if (this.constrainVertical) {
-
-				verticalLookRatio = Math.PI / (this.verticalMax - this.verticalMin);
-
-			}
-
-			this.lon += this.mouseX * actualLookSpeed;
-			if (this.lookVertical) this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
-
-			this.lat = Math.max(- 85, Math.min(85, this.lat));
-			this.phi = THREE.Math.degToRad(90 - this.lat);
-
-			this.theta = THREE.Math.degToRad(this.lon);
-
-			if (this.constrainVertical) {
-
-				this.phi = THREE.Math.mapLinear(this.phi, 0, Math.PI, this.verticalMin, this.verticalMax);
-
-			}
-
-			var targetPosition = this.target,
-				position = this.object.position;
-
-			targetPosition.x = position.x + 100 * Math.sin(this.phi) * Math.cos(this.theta);
-			targetPosition.y = position.y + 100 * Math.cos(this.phi);
-			targetPosition.z = position.z + 100 * Math.sin(this.phi) * Math.sin(this.theta);
-
-			this.object.lookAt(targetPosition);
+			return v;
 
 		};
 
-	}
-	
-	function contextmenu( event ) {
+	}();
 
-		event.preventDefault();
+	// FPS Controls Additions
 
-	}
-
-	this.dispose = function() {
-
-		this.domElement.removeEventListener( 'contextmenu', contextmenu, false );
-		this.domElement.removeEventListener( 'mousedown', _onMouseDown, false );
-		this.domElement.removeEventListener( 'mousemove', _onMouseMove, false );
-		this.domElement.removeEventListener( 'mouseup', _onMouseUp, false );
-
-		window.removeEventListener( 'keydown', _onKeyDown, false );
-		window.removeEventListener( 'keyup', _onKeyUp, false );
+	scope.updatePlayerHeight = function (height) {
+		yawObject.position.y = height;
 	};
 
-	var _onMouseMove = bind( this, this.onMouseMove );
-	var _onMouseDown = bind( this, this.onMouseDown );
-	var _onMouseUp = bind( this, this.onMouseUp );
-	var _onKeyDown = bind( this, this.onKeyDown );
-	var _onKeyUp = bind( this, this.onKeyUp );
+	scope.raycasters = {
 
-	this.domElement.addEventListener( 'contextmenu', contextmenu, false );
-	this.domElement.addEventListener( 'mousemove', _onMouseMove, false );
-	this.domElement.addEventListener( 'mousedown', _onMouseDown, false );
-	this.domElement.addEventListener( 'mouseup', _onMouseUp, false );
+		down: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, - 1, 0), 0, 20),
+		up: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 1, 0), 0, 20),
+		forward: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 0, -1), 0, 15),
+		backward: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 15),
+		left: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 15),
+		right: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 15),
+		rightStrafe: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 30),
+		leftStrafe: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 30),
 
-	window.addEventListener( 'keydown', _onKeyDown, false );
-	window.addEventListener( 'keyup', _onKeyUp, false );
+		updateRaycasters: function () {
 
-	function bind( scope, fn ) {
+			this.up.ray.origin.copy(scope.playersPosition);
+			this.down.ray.origin.copy(scope.playersPosition);
+			this.forward.ray.set(scope.playersPosition, scope.camDir);
+			this.backward.ray.set(scope.playersPosition, scope.camDir.negate());
+			this.left.ray.set(scope.playersPosition, scope.camDir.applyMatrix4(new THREE.Matrix4().makeRotationY(- (Math.PI / 2))));
+			this.right.ray.set(scope.playersPosition, scope.camDir.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI)));
+			this.rightStrafe.ray.set(scope.playersPosition, scope.camDir.applyMatrix4(new THREE.Matrix4().makeRotationY((Math.PI / 4)))); // Working
+			this.leftStrafe.ray.set(scope.playersPosition, scope.camDir.applyMatrix4(new THREE.Matrix4().makeRotationY((Math.PI / 4))));
 
-		return function () {
+		}
 
-			fn.apply( scope, arguments );
+	};
 
-		};
+	scope.intersections = {
 
-	}
+		down: scope.raycasters.down.intersectObjects(worldObjects),
+		up: scope.raycasters.up.intersectObjects(worldObjects),
+		forward: scope.raycasters.forward.intersectObjects(worldObjects),
+		backward: scope.raycasters.backward.intersectObjects(worldObjects),
+		left: scope.raycasters.left.intersectObjects(worldObjects),
+		right: scope.raycasters.right.intersectObjects(worldObjects),
+		rightStrafe: scope.raycasters.rightStrafe.intersectObjects(worldObjects),
+		leftStrafe: scope.raycasters.leftStrafe.intersectObjects(worldObjects),
 
-	this.handleResize();
+		checkIntersections: function () {
+
+			this.down = scope.raycasters.down.intersectObjects(worldObjects);
+			this.up = scope.raycasters.up.intersectObjects(worldObjects);
+			this.forward = scope.raycasters.forward.intersectObjects(worldObjects);
+			this.backward = scope.raycasters.backward.intersectObjects(worldObjects);
+			this.left = scope.raycasters.left.intersectObjects(worldObjects);
+			this.right = scope.raycasters.right.intersectObjects(worldObjects);
+			this.rightStrafe = scope.raycasters.rightStrafe.intersectObjects(worldObjects);
+			this.leftStrafe = scope.raycasters.leftStrafe.intersectObjects(worldObjects);
+
+		}
+
+	};
+
+	scope.movements = {
+
+		forward: false,
+		backward: false,
+		left: false,
+		right: false,
+
+		locks: {
+			forward: true,
+			backward: true,
+			left: true,
+			right: true,
+		},
+
+		lock: function () {
+			var intersections = scope.intersections;
+			for (var direction in intersections) {
+				if (intersections[direction].length > 0) {
+					this.locks[direction] = true;
+				}
+			}
+		},
+
+		unlock: function () {
+			this.locks.forward = false;
+			this.locks.backward = false;
+			this.locks.left = false;
+			this.locks.right = false;
+		}
+
+	};
+
+	scope.doubleJump = doubleJump;
+	scope.baseHeight = 0; // The minimum plane height
+	scope.mass = mass || 100;
+	scope.originalMass = mass;
+	scope.walkingSpeed = 2000; // Higher = slower
+	scope.speed = 600; // Movement speed
+	scope.jumpFactor = 90; // Jump height
+	scope.velocity = new THREE.Vector3(1, 1, 1);
+
+	scope.jumps = 0;
+	scope.firstJump = true;
+	scope.walking = false;
+
+	// Crouched
+	scope.crouching = false;
+	var halfHeight;
+	var fullHeight;
+	var crouchSmoothing;
+	var smoothedHeight;
+	var crouched = false;
+
+	// Jump Variables
+	scope.jumping = false;
+
+	scope.jump = function () {
+		scope.jumping = true;
+	};
+
+	scope.crouch = function (boolean) {
+		scope.crouching = boolean;
+	};
+
+	scope.walk = function (boolean) {
+		scope.walking = boolean;
+	};
+
+	// So you can update the world objects when they change
+	scope.updateWorldObjects = function (worldObjects) {
+		scope.worldObjects = worldObjects;
+	};
+
+	scope.updateControls = function () {
+
+		scope.time = performance.now();
+
+		scope.movements.unlock();
+
+		// Check change and if Walking?
+		scope.delta = (scope.walking) ? (scope.time - scope.prevTime) / scope.walkingSpeed : (scope.time - scope.prevTime) / scope.speed;
+		var validDelta = isNaN(scope.delta) === false;
+		if (validDelta) {
+
+			// Velocities
+			scope.velocity.x -= scope.velocity.x * 8.0 * scope.delta; // Left and right
+			scope.velocity.z -= scope.velocity.z * 8.0 * scope.delta; // Forward and back
+			scope.velocity.y -= (scope.walking) ? 9.8 * scope.mass * scope.delta : 5.5 * scope.mass * scope.delta;  // Up and Down
+
+			scope.camDir = scope.getPlayer().getWorldDirection(new THREE.Vector3).negate(); //
+			scope.playersPosition = scope.getPlayer().position.clone();
+
+			scope.raycasters.updateRaycasters();
+			scope.intersections.checkIntersections();
+			scope.movements.lock();
+
+			// If your head hits an object, turn your mass up to make you fall back to earth
+			scope.isBelowObject = scope.intersections.up.length > 0;
+			scope.mass = (scope.isBelowObject === true) ? 500 : scope.originalMass;
+
+			scope.isOnObject = scope.intersections.down.length > 0;
+			if (scope.isOnObject === true) {
+				scope.velocity.y = Math.max(0, scope.velocity.y);
+				scope.jumps = 0;
+
+				//If we start to fall through an object
+				// if ((this.getPlayer().position.y  < playerHeight) &&
+				// 	 scope.downwardsIntersection &&
+				// 	 scope.downwardsIntersection[0].distance < (playerHeight / 2) ) {
+				//
+				// 	 this.getPlayer().position.y += 0.1;
+				// }
+
+			} else {
+				this.walking = false;
+			}
+
+			// Crouched
+
+
+
+			if (!crouched && scope.isOnObject) {
+				halfHeight = scope.getPlayer().position.y - (playerHeight * 0.2);
+				fullHeight = scope.getPlayer().position.y + (playerHeight * 0.2);
+			}
+
+			if (scope.crouching && scope.isOnObject) {
+
+				scope.walking = true;
+				if (!crouched && !scope.justCrouched) {
+					scope.updatePlayerHeight(halfHeight);
+					crouchSmoothing = 0;
+					smoothedHeight = 0;
+					crouched = true;
+
+					// Stop people from crouching through the floor
+					scope.justCrouched = true;
+					setTimeout(function () { scope.justCrouched = false; }, 300);
+				}
+
+			} else if (!scope.crouching && smoothedHeight <= fullHeight) {
+
+				// Smooth out of crouching
+				console.log("finished");
+				smoothedHeight = halfHeight + crouchSmoothing;
+				scope.updatePlayerHeight(smoothedHeight);
+				crouchSmoothing += 2;
+				//console.log(smoothedHeight)
+				crouched = false;
+				scope.walking = false;
+
+			}
+
+			// Jumping - must come after isBelowObject but before isOnObject
+			if (scope.jumping) {
+
+				scope.walking = false;
+				scope.crouching = false;
+
+				if (scope.jumps === 0 && !scope.isBelowObject) {
+					scope.velocity.y += scope.jumpFactor * 2.3;
+					scope.velocity.z *= 2; // Jumping also increases our forward velocity a little
+					scope.jumps = 1;
+				}
+				else if (scope.doubleJump && scope.jumps === 1 && !scope.isOnObject && !scope.isBelowObject) {
+					scope.velocity.y += scope.jumpFactor * 1.5;
+					scope.jumps = 2;
+				}
+
+			}
+
+			// Movements
+
+			if (scope.movements.forward && !scope.walking && !scope.movements.locks.forward) scope.velocity.z -= 400.0 * scope.delta;
+			if (scope.movements.forward && scope.walking && !scope.movements.locks.forward) scope.velocity.z -= 1000.0 * scope.delta;
+			if (scope.movements.backward && !scope.movements.locks.backward) scope.velocity.z += 400.0 * scope.delta;
+			if (scope.movements.left && !scope.movements.locks.left) scope.velocity.x -= 400.0 * scope.delta;
+			if (scope.movements.right && !scope.movements.locks.right) scope.velocity.x += 400.0 * scope.delta;
+
+
+			// Velocity translations
+			scope.getPlayer().translateX(scope.velocity.x * scope.delta);
+			scope.getPlayer().translateY(scope.velocity.y * scope.delta);
+			scope.getPlayer().translateZ(scope.velocity.z * scope.delta);
+
+			scope.jumping = false;
+
+		}
+
+		scope.prevTime = scope.time; // Set the previous time to the time we set at the begining
+
+	};
 
 };
