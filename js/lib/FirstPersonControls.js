@@ -19,9 +19,9 @@ THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, wo
 
 	var PI_2 = Math.PI / 2;
 
-	var onMouseMove = function (event) {
+	var onMouseMove = function (event, touch = false) {
 
-		if (scope.enabled === false) return;
+		if (scope.enabled === false && !touch) return;
 
 		var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
 		var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
@@ -40,6 +40,41 @@ THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, wo
 	};
 
 	document.addEventListener('mousemove', onMouseMove, false);
+
+	// last touch memory
+	var last = undefined
+
+	function touchHandler(event) {
+		// Handler that simulates mouse movement events on touch.
+		// This simulates pointerlock on touch.
+		let touches = event.changedTouches
+		let first = touches[0]
+
+		switch (event.type) {
+			case 'touchstart':
+				last = first
+				break;
+			case 'touchend':
+				last = undefined
+				break;
+			case 'touchmove':
+				event = {
+					'movementX': first.pageX - last.pageX,
+					'movementY': first.pageY - last.pageY,
+				}
+				onMouseMove(event, true)
+				last = first
+				break;
+		}
+
+
+		event.preventDefault()
+	}
+
+	document.addEventListener("touchstart", touchHandler, true)
+	document.addEventListener("touchmove", touchHandler, true)
+	document.addEventListener("touchend", touchHandler, true)
+	document.addEventListener("touchcancel", touchHandler, true)
 
 	scope.enabled = false;
 
@@ -78,10 +113,10 @@ THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, wo
 
 		down: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, - 1, 0), 0, 20),
 		up: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 1, 0), 0, 20),
-		forward: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 0, -1), 0, 15),
-		backward: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 15),
-		left: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 15),
-		right: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 15),
+		forward: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, 0, -1), 0, 10),
+		backward: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 10),
+		left: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 10),
+		right: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 10),
 		rightStrafe: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 30),
 		leftStrafe: new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 30),
 

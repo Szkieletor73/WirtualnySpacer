@@ -77,7 +77,7 @@ function init() {
 
   // Init camera controls
   camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 9000)
-  controls = new THREE.PointerLockControls(camera, 100, 30, false, objects)
+  controls = new THREE.PointerLockControls(camera, 100, 50, false, objects)
   ScreenOverlay(controls)
   scene.add(controls.getPlayer())
 }
@@ -155,40 +155,6 @@ function touchMove(direction, bool) {
     'r': () => {handleKeyInteraction(68, bool, true)}
   }
   directions[direction]()
-}
-
-function touchHandler(event) {
-  // Handler that simulates mouse movement events on touch.
-  // This simulates pointerlock on touch.
-  var touches = event.changedTouches,
-    first = touches[0],
-    type = "";
-  switch (event.type) {
-    case "touchstart": type = "mousedown"; break;
-    case "touchmove": type = "mousemove"; break;
-    case "touchend": type = "mouseup"; break;
-    default: return;
-  }
-
-  // initMouseEvent(type, canBubble, cancelable, view, clickCount, 
-  //                screenX, screenY, clientX, clientY, ctrlKey, 
-  //                altKey, shiftKey, metaKey, button, relatedTarget);
-
-  var simulatedEvent = document.createEvent("MouseEvent");
-  simulatedEvent.initMouseEvent(type, true, true, window, 1,
-    first.screenX, first.screenY,
-    first.clientX, first.clientY, false,
-    false, false, false, 0/*left*/, null);
-
-  first.target.dispatchEvent(simulatedEvent);
-  event.preventDefault();
-}
-
-function init() {
-  document.addEventListener("touchstart", touchHandler, true);
-  document.addEventListener("touchmove", touchHandler, true);
-  document.addEventListener("touchend", touchHandler, true);
-  document.addEventListener("touchcancel", touchHandler, true);
 }
 
 function onWindowResize() {

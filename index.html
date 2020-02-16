@@ -19,22 +19,22 @@
   <body>
     <div id="blocker">
       <div id="instructions">
-        Click to lock pointer.
+        Click to lock pointer if a mouse is available.
         <br>
-        (W, A, S, D = Move, MOUSE = Look around)
+        On mobile, drag the right side of the screen to look around, use buttons to move.
       </div>
     </div>
     <div class="button-container">
       <div id="movementButtons" class="button-container-inner">
+        <div></div>
         <button class="button-square" onpointerdown="touchMove('f', true)" onpointerup="touchMove('f', false)"><i class="fas fa-arrow-up"></i></button>
-        <button class="button-square" onpointerdown="touchMove('b', true)" onpointerup="touchMove('b', false)"><i class="fas fa-arrow-down"></i></button>
+        <div></div>
         <button class="button-square" onpointerdown="touchMove('l', true)" onpointerup="touchMove('l', false)"><i class="fas fa-arrow-left"></i></button>
+        <button class="button-square" onpointerdown="touchMove('b', true)" onpointerup="touchMove('b', false)"><i class="fas fa-arrow-down"></i></button>
         <button class="button-square" onpointerdown="touchMove('r', true)" onpointerup="touchMove('r', false)"><i class="fas fa-arrow-right"></i></button>
-        <button class="button-square" onpointerdown="controls.rotate(1)" onpointerup="controls.rotate(-1)"><i class="fas fa-undo"></i></button>
-        <button class="button-square" onpointerdown="controls.rotate(2)" onpointerup="controls.rotate(-2)"><i class="fas fa-redo"></i></button>
       </div>
       <div id="lockIndicator" class="button-container-inner">
-        <button class="button-square"><i class="fas fa-mouse"></i></button>
+        <button class="button-square"><i class="fas fa-mouse"></i> <span>W, A, S, D to move, mouse to look around. ESC to exit pointer lock.</span></button>
       </div>
     </div>
     <script type="text/javascript" src="js/lib/pointerlock.js"></script>

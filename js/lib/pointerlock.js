@@ -17,6 +17,7 @@ function ScreenOverlay(controls, controlsEnabled) {
         controls.enabled = true;
 
         blocker.style.display = 'none';
+
         lockIndicator.style.display = 'initial';
         buttons.style.display = 'none';
 
@@ -27,8 +28,9 @@ function ScreenOverlay(controls, controlsEnabled) {
         blocker.style.display = '-webkit-box';
         blocker.style.display = '-moz-box';
         blocker.style.display = 'box';
+        
         lockIndicator.style.display = 'none';
-        buttons.style.display = 'initial';
+        buttons.style.display = 'grid';
 
         instructions.style.display = '';
 
