@@ -35,24 +35,6 @@ function init() {
 
   // Array of objects representing the full scene
   var props = [
-    // {
-    //   path: "assets/desk.glb",
-    //   x: 0,
-    //   y: 0,
-    //   z: -100,
-    // },
-    // {
-    //   path: "assets/desk.glb",
-    //   x: 100,
-    //   y: 0,
-    //   z: -100,
-    // },
-    // {
-    //   path: "assets/desk_hitbox.glb",
-    //   x: 200,
-    //   y: 0,
-    //   z: -100,
-    // }
     {
       path: "assets/wydzial.glb",
       x: 0,
@@ -65,7 +47,7 @@ function init() {
   // Load all objects
   props.forEach((el) => {
     loader.load(el.path, (gltf) => {
-      // extract hitboxes from scene
+      // extract hitboxes from scene into an array of colliders
       gltf.scene.traverse((child) => {
         if (child.name.includes("hitbox")) {
           objects.push(child)
@@ -85,10 +67,6 @@ function init() {
       scene.add(gltf.scene)
     })
   })
-  
-
-  console.log(objects)
-
 
   renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio)
@@ -106,14 +84,13 @@ function init() {
 
 function render() {
   requestAnimationFrame(render)
-  if(controls.enabled)
-    controls.updateControls()
   renderer.render(scene, camera)
+  controls.updateControls()
 }
 
 
-// Attach eventHandler hooks for controls
 function eventHandlers() {
+  // Attach eventHandler hooks for controls
 
   // Keyboard press handlers
   var onKeyDown = function (event) { if (handleKeyInteraction(event.keyCode, true)) {event.preventDefault(); event.stopPropagation();}  }
@@ -125,44 +102,93 @@ function eventHandlers() {
   window.addEventListener('resize', onWindowResize, false)
 }
 
-// Camera controls - defaults to FPS-like controls
-function handleKeyInteraction(keyCode, boolean) {
-  if(!controls.enabled) boolean = false
-  var isKeyDown = boolean
+function handleKeyInteraction(keyCode, bool, touch = false) {
+  // Camera controls - defaults to FPS-like controls
+  if(!controls.enabled && !touch) bool = false
   switch (keyCode) {
     case 38: // up
     case 87: // w
-      controls.movements.forward = boolean
+      controls.movements.forward = bool
       return true
 
     case 40: // down
     case 83: // s
-      controls.movements.backward = boolean
+      controls.movements.backward = bool
       return true
 
     case 37: // left
     case 65: // a
-      controls.movements.left = boolean
+      controls.movements.left = bool
       return true
 
     case 39: // right
     case 68: // d
-      controls.movements.right = boolean
+      controls.movements.right = bool
       return true
 
-    case 32: // space
-      if (!isKeyDown && controls.enabled) {
-        controls.jump()
-      }
-      return true
+    // No need for jumping
+    // case 32: // space
+    //   if (!isKeyDown && controls.enabled) {
+    //     controls.jump()
+    //   }
+    //   return true
 
-    case 16: // shift
-      controls.walk(!boolean)
-      return true
+    // case 16: // shift
+    //   controls.walk(!bool)
+    //   return true
 
     default:
       return false
     }
+}
+
+function touchMove(direction, bool) {
+  // Handles input from buttons for touchscreen movement.
+  // Init an object that serves as a hashmap of functions, calling the usual movement functions,
+  // with an additional "touch" argument set to true, to bypass the usual controls lock
+  // if cursor is not locked (which is impossible to do on mobile)
+  // This ensures parity of functionality, and saves us from writing redundant code.
+  directions = {
+    'f': () => {handleKeyInteraction(87, bool, true)},
+    'b': () => {handleKeyInteraction(83, bool, true)},
+    'l': () => {handleKeyInteraction(65, bool, true)},
+    'r': () => {handleKeyInteraction(68, bool, true)}
+  }
+  directions[direction]()
+}
+
+function touchHandler(event) {
+  // Handler that simulates mouse movement events on touch.
+  // This simulates pointerlock on touch.
+  var touches = event.changedTouches,
+    first = touches[0],
+    type = "";
+  switch (event.type) {
+    case "touchstart": type = "mousedown"; break;
+    case "touchmove": type = "mousemove"; break;
+    case "touchend": type = "mouseup"; break;
+    default: return;
+  }
+
+  // initMouseEvent(type, canBubble, cancelable, view, clickCount, 
+  //                screenX, screenY, clientX, clientY, ctrlKey, 
+  //                altKey, shiftKey, metaKey, button, relatedTarget);
+
+  var simulatedEvent = document.createEvent("MouseEvent");
+  simulatedEvent.initMouseEvent(type, true, true, window, 1,
+    first.screenX, first.screenY,
+    first.clientX, first.clientY, false,
+    false, false, false, 0/*left*/, null);
+
+  first.target.dispatchEvent(simulatedEvent);
+  event.preventDefault();
+}
+
+function init() {
+  document.addEventListener("touchstart", touchHandler, true);
+  document.addEventListener("touchmove", touchHandler, true);
+  document.addEventListener("touchend", touchHandler, true);
+  document.addEventListener("touchcancel", touchHandler, true);
 }
 
 function onWindowResize() {

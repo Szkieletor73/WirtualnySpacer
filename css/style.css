@@ -29,6 +29,10 @@ body {
 
 }
 
+#lockIndicator {
+	display: none;
+}
+
 #instructions {
 
 	width: 100%;

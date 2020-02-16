@@ -1,6 +1,8 @@
 // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
 function ScreenOverlay(controls, controlsEnabled) {
   var blocker = document.getElementById('blocker');
+  var buttons = document.getElementById('movementButtons')
+  var lockIndicator = document.getElementById('lockIndicator')
   var instructions = document.getElementById('instructions');
   var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
@@ -15,6 +17,8 @@ function ScreenOverlay(controls, controlsEnabled) {
         controls.enabled = true;
 
         blocker.style.display = 'none';
+        lockIndicator.style.display = 'initial';
+        buttons.style.display = 'none';
 
       } else {
 
@@ -23,6 +27,8 @@ function ScreenOverlay(controls, controlsEnabled) {
         blocker.style.display = '-webkit-box';
         blocker.style.display = '-moz-box';
         blocker.style.display = 'box';
+        lockIndicator.style.display = 'none';
+        buttons.style.display = 'initial';
 
         instructions.style.display = '';
 

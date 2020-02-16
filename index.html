@@ -9,6 +9,9 @@
     <script type="text/javascript" src="js/lib/GLTFLoader.js"></script>
     <script type="text/javascript" src="js/lib/FirstPersonControls.js"></script>
 
+    <!-- Font Awesome icons -->
+    <script src="https://kit.fontawesome.com/839303b48d.js" crossorigin="anonymous"></script>
+
     <script type="text/javascript" src="js/main.js"></script>
     <link rel="stylesheet" href="css/style.css" type="text/css">
   </head>
@@ -18,17 +21,20 @@
       <div id="instructions">
         Click to lock pointer.
         <br>
-        (W, A, S, D = Move, SPACE = Jump, MOUSE = Look around, SHIFT = Walk)
+        (W, A, S, D = Move, MOUSE = Look around)
       </div>
     </div>
     <div class="button-container">
-      <div class="button-container-inner">
-        <!-- <button class="button-square" onpointerdown="controls.move(1)" onpointerup="controls.move(-1)">Forward</button>
-        <button class="button-square" onpointerdown="controls.move(3)" onpointerup="controls.move(-3)">Backward</button>
-        <button class="button-square" onpointerdown="controls.move(2)" onpointerup="controls.move(-2)">Left</button>
-        <button class="button-square" onpointerdown="controls.move(4)" onpointerup="controls.move(-4)">Right</button>
-        <button class="button-square" onpointerdown="controls.rotate(1)" onpointerup="controls.rotate(-1)">Rot Left</button>
-        <button class="button-square" onpointerdown="controls.rotate(2)" onpointerup="controls.rotate(-2)">Rot Right</button> -->
+      <div id="movementButtons" class="button-container-inner">
+        <button class="button-square" onpointerdown="touchMove('f', true)" onpointerup="touchMove('f', false)"><i class="fas fa-arrow-up"></i></button>
+        <button class="button-square" onpointerdown="touchMove('b', true)" onpointerup="touchMove('b', false)"><i class="fas fa-arrow-down"></i></button>
+        <button class="button-square" onpointerdown="touchMove('l', true)" onpointerup="touchMove('l', false)"><i class="fas fa-arrow-left"></i></button>
+        <button class="button-square" onpointerdown="touchMove('r', true)" onpointerup="touchMove('r', false)"><i class="fas fa-arrow-right"></i></button>
+        <button class="button-square" onpointerdown="controls.rotate(1)" onpointerup="controls.rotate(-1)"><i class="fas fa-undo"></i></button>
+        <button class="button-square" onpointerdown="controls.rotate(2)" onpointerup="controls.rotate(-2)"><i class="fas fa-redo"></i></button>
+      </div>
+      <div id="lockIndicator" class="button-container-inner">
+        <button class="button-square"><i class="fas fa-mouse"></i></button>
       </div>
     </div>
     <script type="text/javascript" src="js/lib/pointerlock.js"></script>

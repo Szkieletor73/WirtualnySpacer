@@ -45,10 +45,6 @@ function init() {
 
   //init camera controls
   controls = new THREE.FirstPersonControls(camera, renderer.domElement);
-  // controls = new THREE.OrbitControls(camera, renderer.domElement);
-  // controls.enableDamping = true;
-  // controls.dampingFactor = 0.25;
-  // controls.enableZoom = true;
 }
 
 function render() {
