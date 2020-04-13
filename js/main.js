@@ -22,6 +22,9 @@ function init() {
   ambient = new THREE.AmbientLight(0xffffff, 1.0)
   scene.add(ambient)
 
+  // Skybox
+  
+
   // Floor
   var geometry = new THREE.PlaneGeometry(1000, 1000)
   var material = new THREE.MeshBasicMaterial({ color: 0xdddddd, side: THREE.DoubleSide })
@@ -36,7 +39,7 @@ function init() {
   // Array of objects representing the full scene
   var props = [
     {
-      path: "assets/wydzial.glb",
+      path: "assets/wydzial2.glb",
       x: 0,
       y: 0,
       z: 0,
@@ -53,12 +56,16 @@ function init() {
           objects.push(child)
           // debug
           child.material.wireframe = true
+        } else if (child.name.includes("door_interactive")) {
+          // child.rotation.y += 90
         }
         if (child.type == "Group") child.traverse((subChild) => {
           if (child.name.includes("hitbox")) {
             objects.push(child)
             // debug
             child.material.wireframe = true
+          } else if (child.name.includes("door_interactive")) {
+          // child.rotation.y += 90
           }
         })
       });
