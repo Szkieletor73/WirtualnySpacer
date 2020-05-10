@@ -21,17 +21,17 @@ function init() {
   ambient = new THREE.AmbientLight(0xffffff, 1.0);
   scene.add(ambient);
 
-  //load the material file and model
+  // load the material file and model
   var mtlLoader = new THREE.MTLLoader();
   mtlLoader.setBaseUrl('assets/');
   mtlLoader.setPath('assets/');
-  mtlLoader.load('../model/wydzial.mtl', function (materials) {
+  mtlLoader.load('../assets/wydzial.mtl', function (materials) {
     materials.preload();
 
     var objLoader = new THREE.OBJLoader();
     objLoader.setMaterials(materials);
     objLoader.setPath('assets/');
-    objLoader.load('../model/wydzial.obj', function (object) {
+    objLoader.load('../assets/wydzial.obj', function (object) {
       model = object;
       scene.add(model);
     });

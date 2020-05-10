@@ -270,7 +270,7 @@ THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, wo
 				// if ((this.getPlayer().position.y  < playerHeight) &&
 				// 	 scope.downwardsIntersection &&
 				// 	 scope.downwardsIntersection[0].distance < (playerHeight / 2) ) {
-				//
+				
 				// 	 this.getPlayer().position.y += 0.1;
 				// }
 

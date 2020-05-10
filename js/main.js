@@ -3,69 +3,58 @@ var camera, controls, scene, renderer, model
 var lighting, ambient, keyLight, fillLight, backLight
 var objects = [] // array of collidable objects
 var mouselookTimeout = false
+var sceneLoaded = false // safety check to see if the model is actually loaded
 
-document.addEventListener('DOMContentLoaded', function () {
+
+// Array of objects representing the full scene
+var props = [
+  {
+    path: "assets/wydzial.glb",
+    x: 20,
+    y: 30,
+    z: 520,
+    scale: 0.4,
+  }
+]
+
+document.addEventListener('DOMContentLoaded', async function () {
+  await init()
   eventHandlers()
-  init()
   render()
 })
 
-function init() {
-  container = document.createElement('div')
-  document.body.appendChild(container)
-
-  camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 1000)
-  camera.position.y = 0
-
-  // White ambient, no shading
-  scene = new THREE.Scene()
-  ambient = new THREE.AmbientLight(0xffffff, 1.0)
-  scene.add(ambient)
-
-  // Skybox
-  
-
-  // Floor
-  var geometry = new THREE.PlaneGeometry(1000, 1000)
-  var material = new THREE.MeshBasicMaterial({ color: 0xdddddd, side: THREE.DoubleSide })
-  var plane = new THREE.Mesh(geometry, material)
-  plane.rotation.x = Math.PI / 2
-  objects.push(plane)
-  scene.add(plane)
-
-  // Instantiate a loader
-  var loader = new THREE.GLTFLoader()
-
-  // Array of objects representing the full scene
-  var props = [
-    {
-      path: "assets/wydzial2.glb",
-      x: 0,
-      y: 0,
-      z: 0,
-      scale: 0.4,
-    }
-  ]
-
-  // Load all objects
-  props.forEach((el) => {
-    loader.load(el.path, (gltf) => {
+function loadScene(loader) {
+  for (const el of props) {
+    loader.load(el.path, gltf => {
       // extract hitboxes from scene into an array of colliders
       gltf.scene.traverse((child) => {
+        try{
+          if(child.material.name.includes("Window")){
+            child.material.transparent = true
+            child.material.opacity = 0.3
+            child.material.depthWrite = false
+            // child.material.depthTest = true
+            // child.renderOrder = 1
+          }
+        } catch {}
         if (child.name.includes("hitbox")) {
           objects.push(child)
+          child.material.transparent = true
+          child.material.opacity = 0
           // debug
-          child.material.wireframe = true
+          // child.material.wireframe = true
         } else if (child.name.includes("door_interactive")) {
           // child.rotation.y += 90
         }
         if (child.type == "Group") child.traverse((subChild) => {
-          if (child.name.includes("hitbox")) {
-            objects.push(child)
+          if (subChild.name.includes("hitbox")) {
+            objects.push(subChild)
+            subChild.material.transparent = true
+            subChild.material.opacity = 0
             // debug
-            child.material.wireframe = true
-          } else if (child.name.includes("door_interactive")) {
-          // child.rotation.y += 90
+            // child.material.wireframe = true
+          } else if (subChild.name.includes("door_interactive")) {
+            // child.rotation.y += 90
           }
         })
       });
@@ -73,9 +62,27 @@ function init() {
       gltf.scene.scale.set(el.scale, el.scale, el.scale)
       scene.add(gltf.scene)
     })
-  })
+  }
+  return true
+}
+
+async function init() {
+  container = document.createElement('div')
+  document.body.appendChild(container)
+
+  // White ambient, no shading
+  scene = new THREE.Scene()
+  ambient = new THREE.AmbientLight(0xffffff, 1.0)
+  scene.add(ambient)
+
+  // Instantiate a loader
+  var loader = new THREE.GLTFLoader()
+
+  // Load all objects
+  loadScene(loader)
 
   renderer = new THREE.WebGLRenderer()
+  renderer.sortObjects = false
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.setClearColor(new THREE.Color("hsl(0, 0%, 10%)"))
@@ -84,7 +91,7 @@ function init() {
 
   // Init camera controls
   camera = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 9000)
-  controls = new THREE.PointerLockControls(camera, 100, 50, false, objects)
+  controls = new THREE.PointerLockControls(camera, 0, 60, false, objects)
   ScreenOverlay(controls)
   scene.add(controls.getPlayer())
 }
