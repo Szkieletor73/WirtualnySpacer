@@ -3,7 +3,6 @@ var camera, controls, scene, renderer, model
 var lighting, ambient, keyLight, fillLight, backLight
 var objects = [] // array of collidable objects
 var mouselookTimeout = false
-var sceneLoaded = false // safety check to see if the model is actually loaded
 
 
 // Array of objects representing the full scene
@@ -11,7 +10,7 @@ var props = [
   {
     path: "assets/wydzial.glb",
     x: 20,
-    y: 30,
+    y: 38,
     z: 520,
     scale: 0.4,
   }
@@ -33,8 +32,6 @@ function loadScene(loader) {
             child.material.transparent = true
             child.material.opacity = 0.3
             child.material.depthWrite = false
-            // child.material.depthTest = true
-            // child.renderOrder = 1
           }
         } catch {}
         if (child.name.includes("hitbox")) {
@@ -63,7 +60,6 @@ function loadScene(loader) {
       scene.add(gltf.scene)
     })
   }
-  return true
 }
 
 async function init() {
@@ -160,7 +156,7 @@ function touchMove(direction, bool) {
   // Handles input from buttons for touchscreen movement.
   // Init an object that serves as a hashmap of functions, calling the usual movement functions,
   // with an additional "touch" argument set to true, to bypass the usual controls lock
-  // if cursor is not locked (which is impossible to do on mobile)
+  // if cursor is not locked. (which is impossible to do on mobile)
   // This ensures parity of functionality, and saves us from writing redundant code.
   directions = {
     'f': () => {handleKeyInteraction(87, bool, true)},

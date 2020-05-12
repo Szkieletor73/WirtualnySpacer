@@ -66,8 +66,6 @@ THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, wo
 				last = first
 				break;
 		}
-
-
 		event.preventDefault()
 	}
 
@@ -248,7 +246,8 @@ THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, wo
 			// Velocities
 			scope.velocity.x -= scope.velocity.x * 8.0 * scope.delta; // Left and right
 			scope.velocity.z -= scope.velocity.z * 8.0 * scope.delta; // Forward and back
-			scope.velocity.y -= (scope.walking) ? 9.8 * scope.mass * scope.delta : 5.5 * scope.mass * scope.delta;  // Up and Down
+			// scope.velocity.y -= (scope.walking) ? 9.8 * scope.mass * scope.delta : 5.5 * scope.mass * scope.delta;  // Up and Down
+			scope.velocity.y = 0;
 
 			scope.camDir = scope.getPlayer().getWorldDirection(new THREE.Vector3).negate(); //
 			scope.playersPosition = scope.getPlayer().position.clone();
