@@ -40,9 +40,9 @@ function init() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(new THREE.Color("hsl(0, 0%, 10%)"));
-
+  
   container.appendChild(renderer.domElement);
-
+  
   //init camera controls
   controls = new THREE.FirstPersonControls(camera, renderer.domElement);
 }

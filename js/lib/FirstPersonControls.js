@@ -17,6 +17,8 @@ THREE.PointerLockControls = function (camera, mass, playerHeight, doubleJump, wo
 	yawObject.position.y = playerHeight;
 	yawObject.add(pitchObject);
 
+	yawObject.rotation.y += 180 * Math.PI / 180 // rotate on start
+
 	var PI_2 = Math.PI / 2;
 
 	var onMouseMove = function (event, touch = false) {
